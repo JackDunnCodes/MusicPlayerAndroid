@@ -17,6 +17,8 @@ class MainActivity : AppCompatActivity() {
     private var startServiceButton: Button? = null
     private var stopServiceButton: Button? = null
     private var aboutButton: Button? = null
+    private var playButton: Button? = null
+    private var stopButton: Button? = null
 
     private var player: MediaPlayer? = null
 
@@ -30,6 +32,15 @@ class MainActivity : AppCompatActivity() {
         startServiceButton = findViewById(R.id.startServiceButton)
         stopServiceButton = findViewById(R.id.stopServiceButton)
         aboutButton = findViewById(R.id.aboutButton)
+        stopButton = findViewById(R.id.stopButton)
+        playButton = findViewById(R.id.playButton)
+
+        stopButton?.setOnClickListener {
+            stop()
+        }
+        playButton?.setOnClickListener {
+            play()
+        }
 
         startServiceButton?.setOnClickListener {
             Toast.makeText(
@@ -59,6 +70,12 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         player = MediaPlayer()
         Log.i(TAG, "onStart()")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stop()
+        player?.release()
     }
 
     /**
@@ -114,7 +131,7 @@ class MainActivity : AppCompatActivity() {
      * @return
      */
     private fun getFiles(): List<String> =
-        assets.list("")?.filter { it.toLowerCase(Locale.getDefault()).endsWith("mp3") }
+        assets.list("")?.filter { it.lowercase(Locale.getDefault()).endsWith("mp3") }
             ?: emptyList()
 
     companion object {
