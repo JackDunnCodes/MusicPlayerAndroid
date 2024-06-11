@@ -1,9 +1,14 @@
 package si.uni_lj.fri.musicplayer
 
 
+import android.app.ActivityManager
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
@@ -19,6 +24,19 @@ class MainActivity : AppCompatActivity() {
     private var playButton: Button? = null
     private var stopButton: Button? = null
 
+    private var service: MusicService? = null
+    private val connection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            Log.i(TAG, "onServiceConnected()")
+            this@MainActivity.service = (service as MusicService.LocalBinder).service
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            Log.i(TAG, "onServiceDisconnected()")
+            this@MainActivity.service = null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i(TAG, "onCreate()")
@@ -33,19 +51,22 @@ class MainActivity : AppCompatActivity() {
         playButton = findViewById(R.id.playButton)
 
 
-        stopButton?.setOnClickListener {
 
-        }
         playButton?.setOnClickListener {
-
+            service?.play()
+        }
+        stopButton?.setOnClickListener {
+            service?.stop()
         }
 
         startServiceButton?.setOnClickListener {
             val musicIntent = Intent(this@MainActivity, MusicService::class.java)
             startService(musicIntent)
-
+            bindService(musicIntent, connection, BIND_AUTO_CREATE)
         }
         stopServiceButton?.setOnClickListener {
+            unbindService(connection)
+            service = null
             val musicIntent = Intent(this@MainActivity, MusicService::class.java)
             stopService(musicIntent)
         }
@@ -62,12 +83,31 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Log.i(TAG, "onStart()")
+        if (isServiceRunning()) {
+            val musicIntent = Intent(this@MainActivity, MusicService::class.java)
+            bindService(
+                musicIntent, connection, BIND_AUTO_CREATE
+            )
+        }
     }
+    @Suppress("DEPRECATION")
+    private fun isServiceRunning(): Boolean =
+        (getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
+            .getRunningServices(Int.MAX_VALUE)
+            .any { it.service.className == MusicService::class.java.canonicalName }
 
     override fun onPause() {
         super.onPause()
     }
 
+    override fun onStop() {
+        Log.i(TAG, "onStop()")
+        service?.let {
+            unbindService(connection)
+            service= null
+        }
+        super.onStop()
+    }
 
     /**
      * Returns the list of mp3 files in the assets folder

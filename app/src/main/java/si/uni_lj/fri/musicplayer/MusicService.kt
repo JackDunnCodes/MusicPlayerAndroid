@@ -4,13 +4,15 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.media.MediaPlayer
+import android.os.Binder
 import java.util.Locale
 import java.io.IOException
 
 class MusicService : Service() {
 
     var player: MediaPlayer? = null;
-
+    internal class LocalBinder(val service: MusicService): Binder()
+    private val binder = LocalBinder(this)
 
     /**
      * Starts the music player playback
@@ -66,7 +68,7 @@ class MusicService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         player = MediaPlayer();
-        play()
+//        play()
         return START_STICKY // service will restart if stopped
     }
 
@@ -76,9 +78,7 @@ class MusicService : Service() {
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        TODO("Not yet implemented")
-    }
+    override fun onBind(intent: Intent?): IBinder = binder
 
     companion object {
         private val TAG = MusicService::class.java.simpleName
