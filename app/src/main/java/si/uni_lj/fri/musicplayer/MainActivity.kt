@@ -9,7 +9,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import java.io.IOException
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -19,8 +18,6 @@ class MainActivity : AppCompatActivity() {
     private var aboutButton: Button? = null
     private var playButton: Button? = null
     private var stopButton: Button? = null
-
-    private var player: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,26 +32,22 @@ class MainActivity : AppCompatActivity() {
         stopButton = findViewById(R.id.stopButton)
         playButton = findViewById(R.id.playButton)
 
+
         stopButton?.setOnClickListener {
-            stop()
+
         }
         playButton?.setOnClickListener {
-            play()
+
         }
 
         startServiceButton?.setOnClickListener {
-            Toast.makeText(
-                applicationContext,
-                "Start service button will be used in the service implementation.",
-                Toast.LENGTH_SHORT
-            ).show()
+            val musicIntent = Intent(this@MainActivity, MusicService::class.java)
+            startService(musicIntent)
+
         }
         stopServiceButton?.setOnClickListener {
-            Toast.makeText(
-                applicationContext,
-                "Stop service button will be used in the service implementation.",
-                Toast.LENGTH_SHORT
-            ).show()
+            val musicIntent = Intent(this@MainActivity, MusicService::class.java)
+            stopService(musicIntent)
         }
         aboutButton?.setOnClickListener {
             startActivity(
@@ -68,62 +61,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        player = MediaPlayer()
         Log.i(TAG, "onStart()")
     }
 
     override fun onPause() {
         super.onPause()
-        stop()
-        player?.release()
     }
 
-    /**
-     * Starts the music player playback
-     */
-    fun play() {
-        player?.let {
-            if (it.isPlaying) {
-                return
-            }
-            getFiles().random().apply {
-                try {
-                    val descriptor = assets.openFd(this)
-                    it.setDataSource(
-                        descriptor.fileDescriptor,
-                        descriptor.startOffset,
-                        descriptor.length
-                    )
-                    descriptor.close()
-                    it.prepare()
-                } catch (e: IOException) {
-                    Log.w(TAG, "Could not open file", e)
-                    return
-                }
-                it.isLooping = true
-                it.start()
-
-                // display song info
-                musicInfoTextView?.text = this
-                Log.i(TAG, "Playing song $this")
-            }
-        }
-    }
-
-    /**
-     * Stops the music player playback
-     */
-    fun stop() {
-        player?.let {
-            if (it.isPlaying) {
-                it.stop()
-            }
-            it.reset()
-        }
-
-        // display song info
-        musicInfoTextView?.text = ""
-    }
 
     /**
      * Returns the list of mp3 files in the assets folder
