@@ -36,7 +36,7 @@ class MusicService : Service() {
                     descriptor.close()
                     it.prepare()
                 } catch (e: IOException) {
-                    Log.w(MusicService.TAG, "Could not open file", e)
+                    Log.w(TAG, "Could not open file", e)
                     song = "Error :("
                     broadcastSong()
                     return
@@ -48,7 +48,7 @@ class MusicService : Service() {
 //                musicInfoTextView?.text = this
                 song = this
                 broadcastSong()
-                Log.i(MusicService.TAG, "Playing song $this")
+                Log.i(TAG, "Playing song $this")
             }
         }
     }
@@ -71,9 +71,6 @@ class MusicService : Service() {
         return song
     }
 
-    fun broadcastPlease() {
-        broadcastSong()
-    }
     private fun broadcastSong() {
         val intent = Intent("mplayer.song")
         intent.putExtra("song", song)

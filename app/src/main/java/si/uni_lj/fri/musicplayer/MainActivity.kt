@@ -15,7 +15,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private var musicInfoTextView: TextView? = null
