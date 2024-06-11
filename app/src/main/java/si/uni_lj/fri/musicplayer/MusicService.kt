@@ -6,12 +6,14 @@ import android.os.IBinder
 import android.media.MediaPlayer
 import android.os.Binder
 import android.util.Log
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import java.util.Locale
 import java.io.IOException
 
 class MusicService : Service() {
 
-    var player: MediaPlayer? = null
+    private var player: MediaPlayer? = null
+    var song = ""
     internal class LocalBinder(val service: MusicService): Binder()
     private val binder = LocalBinder(this)
 
@@ -35,6 +37,8 @@ class MusicService : Service() {
                     it.prepare()
                 } catch (e: IOException) {
                     Log.w(MusicService.TAG, "Could not open file", e)
+                    song = "Error :("
+                    broadcastSong()
                     return
                 }
                 it.isLooping = true
@@ -42,6 +46,8 @@ class MusicService : Service() {
 
                 // display song info
 //                musicInfoTextView?.text = this
+                song = this
+                broadcastSong()
                 Log.i(MusicService.TAG, "Playing song $this")
             }
         }
@@ -61,6 +67,18 @@ class MusicService : Service() {
         // display song info
 //        musicInfoTextView?.text = ""
     }
+    fun getSongName(): String {
+        return song
+    }
+
+    fun broadcastPlease() {
+        broadcastSong()
+    }
+    private fun broadcastSong() {
+        val intent = Intent("mplayer.song")
+        intent.putExtra("song", song)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
 
     private fun getFiles(): List<String> =
         assets.list("")?.filter { it.lowercase(Locale.getDefault()).endsWith("mp3") }
@@ -79,7 +97,14 @@ class MusicService : Service() {
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent?): IBinder = binder
+    override fun onBind(intent: Intent?): IBinder  {
+        return binder
+    }
+
+    override fun onRebind(intent: Intent?) {
+        Log.i(TAG, "Rebind!")
+        super.onRebind(intent)
+    }
 
     companion object {
         private val TAG = MusicService::class.java.simpleName

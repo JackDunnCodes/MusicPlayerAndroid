@@ -2,9 +2,11 @@ package si.uni_lj.fri.musicplayer
 
 
 import android.app.ActivityManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
@@ -12,6 +14,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             Log.i(TAG, "onServiceConnected()")
             this@MainActivity.service = (service as MusicService.LocalBinder).service
+            this@MainActivity.musicInfoTextView?.text = service.service.getSongName()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -78,6 +82,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val receiver: BroadcastReceiver = object :BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            musicInfoTextView?.text = intent?.getStringExtra("song")
+        }
+    }
     override fun onStart() {
         super.onStart()
         Log.i(TAG, "onStart()")
@@ -86,6 +95,14 @@ class MainActivity : AppCompatActivity() {
             bindService(
                 musicIntent, connection, BIND_AUTO_CREATE
             )
+        }
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, IntentFilter("mplayer.song"))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        service?.let {
+            musicInfoTextView?.text = it.getSongName()
         }
     }
     @Suppress("DEPRECATION")
@@ -104,6 +121,7 @@ class MainActivity : AppCompatActivity() {
             unbindService(connection)
             service= null
         }
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
         super.onStop()
     }
 
