@@ -6,13 +6,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import java.util.*
 
@@ -108,15 +106,6 @@ class MainActivity : AppCompatActivity() {
         }
         super.onStop()
     }
-
-    /**
-     * Returns the list of mp3 files in the assets folder
-     *
-     * @return
-     */
-    private fun getFiles(): List<String> =
-        assets.list("")?.filter { it.lowercase(Locale.getDefault()).endsWith("mp3") }
-            ?: emptyList()
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName

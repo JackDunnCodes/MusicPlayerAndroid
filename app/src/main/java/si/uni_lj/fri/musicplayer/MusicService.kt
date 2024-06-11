@@ -5,12 +5,13 @@ import android.content.Intent
 import android.os.IBinder
 import android.media.MediaPlayer
 import android.os.Binder
+import android.util.Log
 import java.util.Locale
 import java.io.IOException
 
 class MusicService : Service() {
 
-    var player: MediaPlayer? = null;
+    var player: MediaPlayer? = null
     internal class LocalBinder(val service: MusicService): Binder()
     private val binder = LocalBinder(this)
 
@@ -33,7 +34,7 @@ class MusicService : Service() {
                     descriptor.close()
                     it.prepare()
                 } catch (e: IOException) {
-//                    Log.w(MainActivity.TAG, "Could not open file", e)
+                    Log.w(MusicService.TAG, "Could not open file", e)
                     return
                 }
                 it.isLooping = true
@@ -41,7 +42,7 @@ class MusicService : Service() {
 
                 // display song info
 //                musicInfoTextView?.text = this
-//                Log.i(MainActivity.TAG, "Playing song $this")
+                Log.i(MusicService.TAG, "Playing song $this")
             }
         }
     }
@@ -67,7 +68,7 @@ class MusicService : Service() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        player = MediaPlayer();
+        player = MediaPlayer()
 //        play()
         return START_STICKY // service will restart if stopped
     }
